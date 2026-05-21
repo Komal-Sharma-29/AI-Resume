@@ -649,13 +649,16 @@ else:
                 """
                 if conn is None or not conn.is_connected():
                     conn = get_db_connection()
-                    cursor = conn.cursor()
-                    cursor.execute("COMMIT") 
-                    cursor.close()
+                df = None
+                try:
+                    cursor = conn.cursor(buffered=True)
                     df = pd.read_sql(query, conn)
+                    cursor.close()
+                except Exception as e:
+                    st.error(f"Database error: {e}")
                     conn.close()
 
-                if not df.empty:
+                if df is not None and not df.empty:
                     if 'experience_years' in df.columns:
                         df['experience_years'] = pd.to_numeric(df['experience_years'], errors='coerce').fillna(0).astype(int)
                     else:
