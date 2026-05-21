@@ -649,9 +649,9 @@ else:
                 """
                 if conn is None or not conn.is_connected():
                     conn = get_db_connection()
-                cursor = conn.cursor()
-                cursor.execute("COMMIT") 
-                cursor.close()
+                    cursor = conn.cursor()
+                    cursor.execute("COMMIT") 
+                    cursor.close()
                 df = pd.read_sql(query, conn)
                 conn.close()
 
