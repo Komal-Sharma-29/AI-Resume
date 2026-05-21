@@ -630,12 +630,18 @@ else:
                 st.divider()
 
             conn = get_db_connection()
+            cursor = conn.cursor(buffered=True)
             if conn:
                 query = """
                 SELECT c.*, u.email as user_email 
                 FROM candidates c 
                 LEFT JOIN users u ON c.name = u.full_name
                 """
+                if conn is None or not conn.is_connected():
+                    conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("COMMIT") 
+                cursor.close()
                 df = pd.read_sql(query, conn)
                 conn.close()
 
