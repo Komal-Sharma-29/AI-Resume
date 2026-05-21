@@ -342,9 +342,15 @@ else:
         st.image("https://cdn-icons-png.flaticon.com/512/2103/2103633.png", width=80)
         st.title("Project Navigation")
         st.title("User Profile")
-        if 'user_info' in st.session_state and st.session_state.user_info is not None:
-            username = st.session_state.user_info.get('username', 'User')
-            st.write(f"Logged in as: **{username.upper()}**")
+        if 'user_info' in st.session_state:
+            info = st.session_state.user_info
+            if is instance(info, dict):
+                username = info.get('username', 'User')
+                st.write(f"Logged in as: **{username.upper()}**")
+            else:
+                st.write("Please log in.")
+        else:
+            st.write("Please log in.")
        # st.write(f"Logged in as: **{st.session_state.user_info['username'].upper()}**")
 
         if st.button("Logout", use_container_width=True):
