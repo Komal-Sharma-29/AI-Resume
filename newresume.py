@@ -342,7 +342,7 @@ else:
         st.image("https://cdn-icons-png.flaticon.com/512/2103/2103633.png", width=80)
         st.title("Project Navigation")
         st.title("User Profile")
-        if 'user_info' in st.session_state and st.session_state.user_info:
+        if 'user_info' in st.session_state and st.session_state.user_info is not None:
             username = st.session_state.user_info.get('username', 'User')
             st.write(f"Logged in as: **{username.upper()}**")
        # st.write(f"Logged in as: **{st.session_state.user_info['username'].upper()}**")
