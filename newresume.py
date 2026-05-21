@@ -311,7 +311,7 @@ if not st.session_state.logged_in:
                                         )
                                     """)
                                 cursor.execute("""
-                                   CREATE TABLE IF NOT EXISTS admin_users (
+                                   CREATE TABLE IF NOT EXISTS admin(
                                        id INT AUTO_INCREMENT PRIMARY KEY,
                                         username VARCHAR(255),
                                         password VARCHAR(255),
