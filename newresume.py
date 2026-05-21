@@ -652,8 +652,8 @@ else:
                     cursor = conn.cursor()
                     cursor.execute("COMMIT") 
                     cursor.close()
-                df = pd.read_sql(query, conn)
-                conn.close()
+                    df = pd.read_sql(query, conn)
+                    conn.close()
 
                 if not df.empty:
                     if 'experience_years' in df.columns:
