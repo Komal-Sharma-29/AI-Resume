@@ -499,6 +499,7 @@ else:
                         """)
                         conn.commit()
                         cursor.close()
+                        
                         cursor.execute("INSERT INTO candidates (name, email, skills, match_score, job_title, company, experience_years) VALUES (%s,%s,%s,%s,%s,%s,%s)", 
                                     (u_name, u_email, ", ".join(found), final_user_score, u_job, u_company, int(verified_experience)))
                         conn.commit()
