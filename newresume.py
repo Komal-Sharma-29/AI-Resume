@@ -42,7 +42,7 @@ def verify_login(username, password, role_selected):
             query = "SELECT * FROM admins WHERE username = %s AND password = %s" 
             cursor.execute(query, (username, password))
             
-        result = cursor.fetchone()
+        result = cursor.fetchall()
         cursor.close()
         conn.close()
         return result
