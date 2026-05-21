@@ -299,27 +299,25 @@ if not st.session_state.logged_in:
                         if conn:
                             try:
                                 cursor = conn.cursor()
-                                cursor.execute("DROP TABLE IF EXISTS users")
-                                cursor.execute("DROP TABLE IF EXISTS admin_users")
-                                #cursor.execute("""
-                                 #       CREATE TABLE IF NOT EXISTS users (
-                                  #          id INT AUTO_INCREMENT PRIMARY KEY,
-                                    #        full_name VARCHAR(255),
-                                     #       email VARCHAR(255),
-                                      #      phone VARCHAR(10),
-                                       #     username VARCHAR(255),
-                                        #    password VARCHAR(255),
-                                         #   role VARCHAR(50)
-                                        #)
-                                    #""")
-                               # cursor.execute("""
-                                #    CREATE TABLE IF NOT EXISTS admin_users (
-                                  #     id INT AUTO_INCREMENT PRIMARY KEY,
-                                   #     username VARCHAR(255),
-                                    #    password VARCHAR(255),
-                                     #   role VARCHAR(50)
-                                    #)
-                               # """)
+                                cursor.execute("""
+                                        CREATE TABLE IF NOT EXISTS users (
+                                            id INT AUTO_INCREMENT PRIMARY KEY,
+                                            full_name VARCHAR(255),
+                                            email VARCHAR(255),
+                                            phone VARCHAR(10),
+                                            username VARCHAR(255),
+                                            password VARCHAR(255),
+                                            role VARCHAR(20)
+                                        )
+                                    """)
+                                cursor.execute("""
+                                   CREATE TABLE IF NOT EXISTS admin_users (
+                                       id INT AUTO_INCREMENT PRIMARY KEY,
+                                        username VARCHAR(255),
+                                        password VARCHAR(255),
+                                        role VARCHAR(20)
+                                    )
+                                """)
                                 conn.commit()
                             
                                 if new_role == "Candidate (User)":
