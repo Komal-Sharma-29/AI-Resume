@@ -123,7 +123,7 @@ def evaluate_local_answer(user_answer):
     else:
         return "✅ **Score: 8.5/10**\n\n**Feedback:** Excellent structure and comprehensive response! You explained the concepts clearly.", "success"
 
-st.set_page_config(page_title="AI Resume Analyser & Placement Cell", layout="wide", page_icon="🤖")
+st.set_page_config(page_title="AI Resume Analyser & Insight Hire", layout="wide", page_icon="🤖")
 
 def calculate_experience_from_resume(text):
     import re
