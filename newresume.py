@@ -344,7 +344,7 @@ else:
         st.title("User Profile")
         if 'user_info' in st.session_state:
             info = st.session_state.user_info
-            if is instance(info, dict):
+            if isinstance(info, dict):
                 username = info.get('username', 'User')
                 st.write(f"Logged in as: **{username.upper()}**")
             else:
