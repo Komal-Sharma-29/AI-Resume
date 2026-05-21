@@ -1,7 +1,5 @@
 streamlit
 google-generativeai
-re 
-random
 pdfplumber
 mysql-connector-python
 pandas
