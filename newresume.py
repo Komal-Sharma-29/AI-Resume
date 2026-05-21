@@ -341,7 +341,11 @@ else:
     with st.sidebar:
         st.image("https://cdn-icons-png.flaticon.com/512/2103/2103633.png", width=80)
         st.title("Project Navigation")
-        st.write(f"Logged in as: **{st.session_state.user_info['username'].upper()}**")
+        st.title("User Profile")
+        if 'user_info' in st.session_state and st.session_state.user_info:
+            username = st.session_state.user_info.get('username', 'User')
+            st.write(f"Logged in as: **{username.upper()}**")
+       # st.write(f"Logged in as: **{st.session_state.user_info['username'].upper()}**")
 
         if st.button("Logout", use_container_width=True):
             st.session_state.logged_in = False
