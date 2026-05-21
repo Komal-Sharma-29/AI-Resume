@@ -475,6 +475,20 @@ else:
                     conn = get_db_connection()
                     if conn:
                         cursor = conn.cursor()
+                        cursor.execute("""
+                            CREATE TABLE IF NOT EXISTS candidates (
+                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                name VARCHAR(255),
+                                email VARCHAR(255),
+                                skills VARCHAR(255),
+                                match_score FLOAT,
+                                job_title VARCHAR(255),
+                                company VARCHAR(255),
+                                experience_years INT
+                            )
+                        """)
+                        conn.commit()
+                        cursor.close()
                         cursor.execute("INSERT INTO candidates (name, email, skills, match_score, job_title, company, experience_years) VALUES (%s,%s,%s,%s,%s,%s,%s)", 
                                     (u_name, u_email, ", ".join(found), final_user_score, u_job, u_company, int(verified_experience)))
                         conn.commit()
