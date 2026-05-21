@@ -15,7 +15,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 from datetime import datetime
 
 # --- DATABASE CONNECTION ---
-# DATABASE FUNCTION: Is tarah se update karein
 def get_db_connection():
     try:
         return mysql.connector.connect(
@@ -36,12 +35,28 @@ def verify_login(username, password, role_selected):
     
     try:
         cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                full_name VARCHAR(255),
+                email VARCHAR(255),
+                phone VARCHAR(10),
+                username VARCHAR(255),
+                password VARCHAR(255)
+            )
+        """)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS admin_users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(255),
+                password VARCHAR(255)
+            )
+        """)
+        conn.commit()
         if role_selected == "Candidate (User)":
-            # Users table me check karega
             query = "SELECT * FROM users WHERE username = %s AND password = %s AND role = %s"
             cursor.execute(query, (username, password, role_selected))
         else:
-            # Admins table me check karega (No role column needed in admins table)
             query = "SELECT * FROM admins WHERE username = %s AND password = %s"
             cursor.execute(query, (username, password))
             
