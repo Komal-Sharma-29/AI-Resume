@@ -35,24 +35,6 @@ def verify_login(username, password, role_selected):
     
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                full_name VARCHAR(255),
-                email VARCHAR(255),
-                phone VARCHAR(10),
-                username VARCHAR(255),
-                password VARCHAR(255)
-            )
-        """)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS admin_users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(255),
-                password VARCHAR(255)
-            )
-        """)
-        conn.commit()
         if role_selected == "Candidate (User)":
             query = "SELECT * FROM users WHERE username = %s AND password = %s AND role = %s"
             cursor.execute(query, (username, password, role_selected))
@@ -287,8 +269,7 @@ if not st.session_state.logged_in:
                 st.warning("⚠️ Please enter both Username and Password")
 
         st.write("")
-        # --- DYNAMIC SIGN UP EXPANDER ---
-        # --- DYNAMIC SIGN UP EXPANDER (SECURED) ---
+
         with st.expander("Don't have an account? Sign Up"):
             new_user = st.text_input("New Username", key="reg_user")
             new_pass = st.text_input("New Password", type="password", key="reg_pass") 
@@ -297,15 +278,14 @@ if not st.session_state.logged_in:
             new_phone = st.text_input("Phone Number", key="reg_phone")
             new_role = st.selectbox("Select Role", ["Candidate (User)", "HR (Admin)"], key="reg_role")
             
-            # Conditionally show passcode field if they choose HR (Admin)
             admin_authenticated = True
             if new_role == "HR (Admin)":
                 admin_passcode = st.text_input("Enter Secret Admin Registration Key", type="password", key="reg_admin_key")
-                # Define your secret passcode here
+                
                 if admin_passcode != "SUPER_SECRET_HR_2026":
                     admin_authenticated = False
             
-            # Form centering
+           
             r_col1, r_col2, r_col3 = st.columns([1.5, 1, 1.5])
             with r_col2:
                 register_btn = st.button("Register", use_container_width=True)
@@ -319,7 +299,25 @@ if not st.session_state.logged_in:
                         if conn:
                             try:
                                 cursor = conn.cursor()
-                                # Check and write dynamically according to chosen role
+                                cursor.execute("""
+                                        CREATE TABLE IF NOT EXISTS users (
+                                            id INT AUTO_INCREMENT PRIMARY KEY,
+                                            full_name VARCHAR(255),
+                                            email VARCHAR(255),
+                                            phone VARCHAR(10),
+                                            username VARCHAR(255),
+                                            password VARCHAR(255)
+                                        )
+                                    """)
+                                cursor.execute("""
+                                    CREATE TABLE IF NOT EXISTS admin_users (
+                                        id INT AUTO_INCREMENT PRIMARY KEY,
+                                        username VARCHAR(255),
+                                        password VARCHAR(255)
+                                    )
+                                """)
+                                conn.commit()
+                            
                                 if new_role == "Candidate (User)":
                                     query = "INSERT INTO users (username, password, full_name, email, phone, role) VALUES (%s, %s, %s, %s, %s, %s)"
                                     cursor.execute(query, (new_user, new_pass, new_full_name, new_email, new_phone, new_role))
@@ -334,40 +332,7 @@ if not st.session_state.logged_in:
                                 st.error(f"Error creating account: {e}")
                 else:
                     st.warning("Please fill all details.")
-        # with st.expander("Don't have an account? Sign Up"):
-        #     new_user = st.text_input("New Username", key="reg_user")
-        #     new_pass = st.text_input("New Password", type="password", key="reg_pass") 
-        #     new_full_name = st.text_input("Full Name", key="reg_name")
-        #     new_email = st.text_input("Email Address", key="reg_email")
-        #     new_phone = st.text_input("Phone Number", key="reg_phone")
-        #     new_role = st.selectbox("Select Role",["Candidate (User)", "HR (Admin)"], key="reg_role")
-            
-        #     # Form centering
-        #     r_col1, r_col2, r_col3 = st.columns([1.5, 1, 1.5])
-        #     with r_col2:
-        #         register_btn = st.button("Register", use_container_width=True)
-                
-        #     if register_btn:
-        #         if new_user and new_pass:
-        #             conn = get_db_connection()
-        #             if conn:
-        #                 try:
-        #                     cursor = conn.cursor()
-        #                     # Check and write dynamically according to chosen role
-        #                     if new_role == "Candidate (User)":
-        #                         query = "INSERT INTO users (username, password, full_name, email, phone, role) VALUES (%s, %s, %s, %s, %s, %s)"
-        #                         cursor.execute(query, (new_user, new_pass, new_full_name, new_email, new_phone, new_role))
-        #                     else:
-        #                         query = "INSERT INTO admins (username, password) VALUES (%s, %s)"
-        #                         cursor.execute(query, (new_user, new_pass))
-        #                     conn.commit()
-        #                     cursor.close()
-        #                     conn.close()
-        #                     st.success("Account successfully created! Please log in above.")
-        #                 except Exception as e:
-        #                     st.error(f"Error creating account: {e}")
-        #         else:
-        #             st.warning("Please fill all details.")
+
 
 # AFTER SUCCESSFUL LOGIN
 else:
