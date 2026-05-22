@@ -47,7 +47,7 @@ def init_db():
                         """)
         conn.commit()
         cursor.close()
-if name=="main":
+if __name__=="__main__":
     init_db()
 
 def verify_login(username, password, role_selected):
