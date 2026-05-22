@@ -1,2 +1,3 @@
 # AI-Resume
-It is a Resume Analyzer using AI. 
+app path: https://ai-resume-analyzer-cell.streamlit.app/
+It is an app called Resume Analyzer using AI. and it helps to find job too. 
