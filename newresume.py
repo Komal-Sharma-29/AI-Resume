@@ -23,10 +23,32 @@ def get_db_connection():
             user=st.secrets["mysql"]["user"],
             password=st.secrets["mysql"]["password"],
             database=st.secrets["mysql"]["database"]
+            buffered=True
         )
     except Exception as e:
         st.error(f"❌ Connection Error: {e}")
         return None
+
+def init_db():
+    conn= get_db_connection()
+    if conn:
+        cursor=conn.cursor()
+        cursor.execute("""
+                            CREATE TABLE IF NOT EXISTS candidates (
+                                id INT AUTO_INCREMENT PRIMARY KEY,
+                                name VARCHAR(255),
+                                email VARCHAR(255),
+                                skills VARCHAR(255),
+                                match_score FLOAT,
+                                job_title VARCHAR(255),
+                                company VARCHAR(255),
+                                experience_years INT
+                            )
+                        """)
+        conn.commit()
+        cursor.close()
+if name=="main":
+    init_db()
 
 def verify_login(username, password, role_selected):
     conn = get_db_connection()
@@ -485,21 +507,6 @@ else:
                     conn = get_db_connection()
                     if conn:
                         cursor = conn.cursor()
-                        cursor.execute("""
-                            CREATE TABLE IF NOT EXISTS candidates (
-                                id INT AUTO_INCREMENT PRIMARY KEY,
-                                name VARCHAR(255),
-                                email VARCHAR(255),
-                                skills VARCHAR(255),
-                                match_score FLOAT,
-                                job_title VARCHAR(255),
-                                company VARCHAR(255),
-                                experience_years INT
-                            )
-                        """)
-                        conn.commit()
-                        cursor.close()
-                        
                         cursor.execute("INSERT INTO candidates (name, email, skills, match_score, job_title, company, experience_years) VALUES (%s,%s,%s,%s,%s,%s,%s)", 
                                     (u_name, u_email, ", ".join(found), final_user_score, u_job, u_company, int(verified_experience)))
                         conn.commit()
@@ -651,8 +658,8 @@ else:
                 if conn is None or not conn.is_connected():
                     conn = get_db_connection()
                 df = None
+                cursor = conn.cursor(buffered=True)
                 try:
-                    cursor = conn.cursor(buffered=True)
                     df = pd.read_sql(query, conn)
                     cursor.close()
                 except Exception as e:
