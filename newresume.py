@@ -363,7 +363,10 @@ else:
     with st.sidebar:
         st.image("https://cdn-icons-png.flaticon.com/512/2103/2103633.png", width=80)
         st.title("Project Navigation")
-        st.title("User Profile")
+        if 'user_role' in st.session_state and st.session_state.user_role == 'admin':
+            st.title("Admin")
+        else:
+            st.title("User")
         if 'user_info' in st.session_state:
             info = st.session_state.user_info
             if isinstance(info, dict):
@@ -768,7 +771,7 @@ else:
                                     @st.dialog(f"Send Offer/Interview Letter to {candidate_name}")
                                     def send_email_popup(c_email, c_name, c_score):
                                         if not c_email or c_email == "None":
-                                            st.error(f"⚠️ Email address nahi mila {c_name} ke liye. User profile check karein.")
+                                            st.error(f"⚠️ Email address is not found {c_name} . Please check User profile.")
                                             return
                                         
                                         st.write(f"**To Candidate:** {c_name} (`{c_email}`)")
