@@ -22,7 +22,7 @@ def get_db_connection():
             port=int(st.secrets["mysql"]["port"]),
             user=st.secrets["mysql"]["user"],
             password=st.secrets["mysql"]["password"],
-            database=st.secrets["mysql"]["database"]
+            database=st.secrets["mysql"]["database"],
             buffered=True
         )
     except Exception as e:
