@@ -4,7 +4,7 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 import re
 import random
 import pdfplumber
-import mysql.connector
+import sqlite3
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -15,38 +15,50 @@ from sklearn.metrics.pairwise import cosine_similarity
 from datetime import datetime
 
 # --- DATABASE CONNECTION ---
+# DATABASE FUNCTION: Is tarah se update karein
 def get_db_connection():
-    try:
-        return mysql.connector.connect(
-            host=st.secrets["mysql"]["host"],
-            port=int(st.secrets["mysql"]["port"]),
-            user=st.secrets["mysql"]["user"],
-            password=st.secrets["mysql"]["password"],
-            database=st.secrets["mysql"]["database"],
-            buffered=True
-        )
-    except Exception as e:
-        st.error(f"❌ Connection Error: {e}")
-        return None
+    import sqlite3
+    conn = sqlite3.connect("project.db", check_same_thread=False)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def init_db():
-    conn= get_db_connection()
-    if conn:
-        cursor=conn.cursor()
-        cursor.execute("""
-                            CREATE TABLE IF NOT EXISTS candidates (
-                                id INT AUTO_INCREMENT PRIMARY KEY,
-                                name VARCHAR(255),
-                                email VARCHAR(255),
-                                skills VARCHAR(255),
-                                match_score FLOAT,
-                                job_title VARCHAR(255),
-                                company VARCHAR(255),
-                                experience_years INT
-                            )
-                        """)
-        conn.commit()
-        cursor.close()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS candidates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            email TEXT,
+            skills TEXT,
+            match_score REAL,
+            job_title TEXT,
+            company TEXT,
+            experience_years INTEGER
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            full_name TEXT,
+            email TEXT,
+            phone TEXT,
+            username TEXT UNIQUE,
+            password TEXT,
+            role TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS admins(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT,
+            role TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
 if __name__=="__main__":
     init_db()
 
@@ -56,15 +68,15 @@ def verify_login(username, password, role_selected):
         return None
     
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
         if role_selected == "Candidate (User)":
-            query = "SELECT * FROM users WHERE username = %s AND password = %s AND role = %s"
+            query = "SELECT * FROM users WHERE username = ? AND password = ? AND role = ?"
             cursor.execute(query, (username, password, role_selected))
         else:
-            query = "SELECT * FROM admins WHERE username = %s AND password = %s" 
+            query = "SELECT * FROM admins WHERE username = ? AND password = ?"
             cursor.execute(query, (username, password))
             
-        result = cursor.fetchall()
+        result = cursor.fetchone()
         cursor.close()
         conn.close()
         return result
@@ -193,6 +205,38 @@ st.markdown("""
     html, body, [data-testid="stAppViewContainer"],.main {
         font-family: 'Poppins', sans-serif!important;
     }
+    div[data-testid="stExpander"] {
+        background-color: transparent !important;
+        border: none !important;
+    }
+    div[data-testid="stExpander"] summary {
+        background-color: #262730 !important;
+        color: #FAFAFA !important;
+        border: 1px solid #464655 !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+    }
+    div[data-testid="stExpander"] summary p {
+        color: #FAFAFA !important;
+    }
+    /* Expander khulne ke baad andar ka background */
+    div[data-testid="stExpander"] div[data-testid="stVerticalBlock"] {
+        background-color: #0e1117 !important;
+    }
+    div[data-testid="stExpander"] label, div[data-testid="stExpander"] p {
+        color: #FAFAFA !important;
+    }
+
+    /* 2. Upar ke 3 white boxes ka fix (Admin page) */
+    div[data-testid="stMetric"], div[data-testid="stColumn"] > div {
+        background-color: #262730 !important;
+        border-radius: 10px !important;
+    }
+    div[data-testid="stMetric"] label, div[data-testid="stMetric"] div,
+    div[data-testid="stColumn"] p, div[data-testid="stColumn"] h3 {
+        color: #FAFAFA !important;
+    }
+
     
     h1 {
         font-family: 'Poppins', sans-serif!important;
@@ -291,7 +335,6 @@ if not st.session_state.logged_in:
                 st.warning("⚠️ Please enter both Username and Password")
 
         st.write("")
-
         with st.expander("Don't have an account? Sign Up"):
             new_user = st.text_input("New Username", key="reg_user")
             new_pass = st.text_input("New Password", type="password", key="reg_pass") 
@@ -307,7 +350,7 @@ if not st.session_state.logged_in:
                 if admin_passcode != "SUPER_SECRET_HR_2026":
                     admin_authenticated = False
             
-           
+         
             r_col1, r_col2, r_col3 = st.columns([1.5, 1, 1.5])
             with r_col2:
                 register_btn = st.button("Register", use_container_width=True)
@@ -341,12 +384,11 @@ if not st.session_state.logged_in:
                                     )
                                 """)
                                 conn.commit()
-                            
                                 if new_role == "Candidate (User)":
-                                    query = "INSERT INTO users (username, password, full_name, email, phone, role) VALUES (%s, %s, %s, %s, %s, %s)"
+                                    query = "INSERT INTO users (username, password, full_name, email, phone, role) VALUES (?, ?, ?, ?, ?, ?)"
                                     cursor.execute(query, (new_user, new_pass, new_full_name, new_email, new_phone, new_role))
                                 else:
-                                    query = "INSERT INTO admins (username, password) VALUES (%s, %s)"
+                                    query = "INSERT INTO admins (username, password) VALUES (?, ?)"
                                     cursor.execute(query, (new_user, new_pass))
                                 conn.commit()
                                 cursor.close()
@@ -356,7 +398,6 @@ if not st.session_state.logged_in:
                                 st.error(f"Error creating account: {e}")
                 else:
                     st.warning("Please fill all details.")
-
 
 # AFTER SUCCESSFUL LOGIN
 else:
@@ -376,7 +417,7 @@ else:
                 st.write("Please log in.")
         else:
             st.write("Please log in.")
-       # st.write(f"Logged in as: **{st.session_state.user_info['username'].upper()}**")
+        
 
         if st.button("Logout", use_container_width=True):
             st.session_state.logged_in = False
@@ -510,7 +551,7 @@ else:
                     conn = get_db_connection()
                     if conn:
                         cursor = conn.cursor()
-                        cursor.execute("INSERT INTO candidates (name, email, skills, match_score, job_title, company, experience_years) VALUES (%s,%s,%s,%s,%s,%s,%s)", 
+                        cursor.execute("INSERT INTO candidates (name, email, skills, match_score, job_title, company, experience_years) VALUES (?,?,?,?,?,?,?)", 
                                     (u_name, u_email, ", ".join(found), final_user_score, u_job, u_company, int(verified_experience)))
                         conn.commit()
                         conn.close()
@@ -651,17 +692,16 @@ else:
                 st.divider()
 
             conn = get_db_connection()
-            cursor = conn.cursor(buffered=True)
             if conn:
                 query = """
                 SELECT c.*, u.email as user_email 
                 FROM candidates c 
                 LEFT JOIN users u ON c.name = u.full_name
                 """
-                if conn is None or not conn.is_connected():
+                if conn is None :
                     conn = get_db_connection()
                 df = None
-                cursor = conn.cursor(buffered=True)
+                cursor = conn.cursor()
                 try:
                     df = pd.read_sql(query, conn)
                     cursor.close()
@@ -771,7 +811,7 @@ else:
                                     @st.dialog(f"Send Offer/Interview Letter to {candidate_name}")
                                     def send_email_popup(c_email, c_name, c_score):
                                         if not c_email or c_email == "None":
-                                            st.error(f"⚠️ Email address is not found {c_name} . Please check User profile.")
+                                            st.error(f"⚠️ Email address nahi mila {c_name} ke liye. User profile check karein.")
                                             return
                                         
                                         st.write(f"**To Candidate:** {c_name} (`{c_email}`)")
